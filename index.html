@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Combatrix members &amp; fees</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f5f6f7; --panel: #ffffff; --ink: #16191d; --muted: #5d6570; --line: #e1e4e8;
+  --accent: #b3262f; --accent-soft: #f6e3e4; --share-c: #b3262f; --share-f: #3d5a80;
+  --bad: #c0262f; --warn: #a96200; --ok: #1f7a4d; --track: #e9ecef;
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius: 10px; color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111316; --panel: #1a1d21; --ink: #eceef1; --muted: #9aa3ad; --line: #2b3036;
+    --accent: #ef5a62; --accent-soft: #3a1d20; --share-c: #ef5a62; --share-f: #7fa3cf;
+    --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111316; --panel: #1a1d21; --ink: #eceef1; --muted: #9aa3ad; --line: #2b3036;
+  --accent: #ef5a62; --accent-soft: #3a1d20; --share-c: #ef5a62; --share-f: #7fa3cf;
+  --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+[hidden] { display: none !important; }
+.wrap { max-width: 72rem; margin: 0 auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 22px; }
+
+/* Code screen */
+.gate { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.gate form { width: 100%; max-width: 22rem; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; }
+.gate h1 { font-size: 34px; }
+.gate label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.gate input[type=password], .gate input[type=text] { width: 100%; font: inherit; font-size: 18px; letter-spacing: .08em; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+.gate .row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.btn { font: inherit; font-weight: 600; padding: 10px 14px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; cursor: pointer; }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 500; padding: 6px 12px; font-size: 13px; }
+.btn.ghost:hover { color: var(--ink); }
+.err { color: var(--bad); font-size: 13px; min-height: 1.2em; margin: 0; }
+
+header { display: flex; flex-direction: column; gap: 6px; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.actions { display: flex; gap: 8px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.eyebrow .stamp { background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; letter-spacing: .04em; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 6vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: .01em; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+.lede b { color: var(--ink); font-weight: 600; }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button { font: inherit; font-weight: 500; padding: 10px 14px; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: transparent; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tabs button:focus-visible, .search:focus-visible, .copy:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tabs .n { color: var(--muted); margin-left: 6px; font-variant-numeric: tabular-nums; font-weight: 400; }
+
+.view { display: flex; flex-direction: column; gap: 18px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 12px; }
+.tile, .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; min-width: 0; }
+.lbl { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.big { font-family: var(--display); font-weight: 600; font-size: 42px; line-height: 1.05; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.big.bad { color: var(--bad); }
+.big.warn { color: var(--warn); }
+.sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr)); gap: 12px; align-items: start; }
+.card h2 { font-family: var(--display); font-weight: 600; font-size: 24px; letter-spacing: .01em; margin: 0; }
+.note { font-size: 13px; color: var(--muted); margin: 2px 0 12px; }
+.search { width: 100%; font: inherit; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); margin-bottom: 10px; }
+.scroll { max-height: 28rem; overflow: auto; }
+.scroll.tall { max-height: 44rem; }
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+th { position: sticky; top: 0; background: var(--panel); text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+.num { text-align: right; white-space: nowrap; }
+.dt { white-space: nowrap; }
+.phone { white-space: nowrap; color: var(--muted); user-select: all; }
+.copy { font: inherit; font-size: 11px; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; user-select: none; }
+.copy:hover { color: var(--ink); }
+.red { color: var(--bad); font-weight: 600; }
+.amber { color: var(--warn); font-weight: 600; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.pill.today { background: var(--accent-soft); color: var(--bad); }
+.empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 8px; }
+
+.shares { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 14px; margin-top: 8px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+.split { display: flex; height: 14px; border-radius: 7px; overflow: hidden; background: var(--track); margin: 16px 0; }
+.split div { height: 100%; }
+.prev { padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.prev b { color: var(--ink); font-weight: 600; }
+footer { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 30rem) { .hide-narrow { display: none; } .big { font-size: 36px; } }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <form id="gate-form" autocomplete="off">
+    <div class="eyebrow"><span>Combatrix</span></div>
+    <h1>Members &amp; fees</h1>
+    <label for="code">Access code</label>
+    <input id="code" name="code" type="password" required autofocus spellcheck="false" autocapitalize="characters">
+    <label class="row"><input type="checkbox" id="remember"> Remember on this device</label>
+    <button class="btn" type="submit" id="unlock">Open dashboard</button>
+    <p class="err" id="gate-err" role="alert"></p>
+  </form>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <div class="top">
+      <div class="eyebrow"><span>Combatrix</span><span class="stamp" id="stamp">Live</span></div>
+      <div class="actions">
+        <button class="btn ghost" type="button" id="refresh">Refresh</button>
+        <button class="btn ghost" type="button" id="lock">Lock</button>
+      </div>
+    </div>
+    <h1>Members &amp; fees</h1>
+    <p class="lede"><b id="l-pending">—</b> members are pending payment, and <b id="l-exp7">—</b> more expire in the next 7 days.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button type="button" role="tab" id="tab-fees" data-view="fees" aria-selected="true">Fees</button>
+    <button type="button" role="tab" id="tab-inactive" data-view="inactive" aria-selected="false">Inactive members<span class="n" id="n-inactive"></span></button>
+  </nav>
+
+  <section class="view" id="fees" role="tabpanel" aria-labelledby="tab-fees">
+    <div class="tiles">
+      <div class="tile">
+        <div class="lbl">Pending payment</div>
+        <div class="big bad" id="t-pending">—</div>
+        <div class="sub"><span id="t-active">—</span> active members</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">Expiring in 7 days</div>
+        <div class="big warn" id="t-exp7">—</div>
+        <div class="sub"><span id="t-exp30">—</span> in the next 30 days</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">Earned in <span id="t-month">this month</span></div>
+        <div class="big" id="t-total">—</div>
+        <div class="sub"><span id="t-payments">—</span> memberships starting this month</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Fees expired</h2>
+        <p class="note">Members marked pending. Most recently expired first.</p>
+        <input class="search" id="q-expired" type="search" placeholder="Search by name or phone" aria-label="Search pending members">
+        <div class="scroll">
+          <table id="expired-table">
+            <thead><tr><th>Phone</th><th>Member</th><th>Expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Expiring soon</h2>
+        <p class="note">Active memberships ending in the next 30 days. Soonest first.</p>
+        <div class="scroll">
+          <table id="expiring-table">
+            <thead><tr><th>Phone</th><th>Member</th><th>Expires on</th><th class="num">Days left</th><th class="num hide-narrow">Fee</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Earnings · <span id="e-month">this month</span></h2>
+      <p class="note">Fees for memberships that start this month, split between Combatrix and Fitshala.</p>
+      <div class="shares">
+        <div>
+          <div class="lbl"><span class="sw" style="background:var(--share-c)"></span>Combatrix share</div>
+          <div class="big" id="e-c">—</div>
+          <div class="sub"><span id="e-cp">—</span> of total</div>
+        </div>
+        <div>
+          <div class="lbl"><span class="sw" style="background:var(--share-f)"></span>Fitshala share</div>
+          <div class="big" id="e-f">—</div>
+          <div class="sub"><span id="e-fp">—</span> of total</div>
+        </div>
+        <div>
+          <div class="lbl">Total</div>
+          <div class="big" id="e-t">—</div>
+          <div class="sub"><span id="e-n">—</span> memberships</div>
+        </div>
+      </div>
+      <div class="split" role="img" aria-label="Combatrix and Fitshala share of this month's earnings">
+        <div id="seg-c" style="background:var(--share-c)"></div><div id="seg-f" style="background:var(--share-f)"></div>
+      </div>
+      <div class="prev">Last month (<span id="p-month">—</span>): <b id="p-t">—</b> total · Combatrix <span id="p-c">—</span> · Fitshala <span id="p-f">—</span></div>
+    </div>
+  </section>
+
+  <section class="view" id="inactive" role="tabpanel" aria-labelledby="tab-inactive" hidden>
+    <div class="card">
+      <h2>Inactive members</h2>
+      <p class="note">Members marked inactive, with their last membership. Most recently expired first.</p>
+      <input class="search" id="q-inactive" type="search" placeholder="Search by name or phone" aria-label="Search inactive members">
+      <div class="scroll tall">
+        <table id="inactive-table">
+          <thead><tr><th>Phone</th><th>Member</th><th>Last expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th><th class="hide-narrow">Joined</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer id="foot">Live data from the Combatrix member records.</footer>
+</div>
+
+<script>
+(() => {
+  // Public project URL and publishable key: safe to ship. All data sits behind the access code,
+  // which the database function checks on every request.
+  const SUPABASE_URL = 'https://ucaulmnmpjxhdmzsfsdi.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_cQGg1RbRkRjRK7-FNCf9tA_HJTF6J6F';
+  const STORE_KEY = 'combatrix-dashboard-code';
+
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get: () => { try { return localStorage.getItem(STORE_KEY) || sessionStorage.getItem(STORE_KEY); } catch (e) { return null; } },
+    set: (code, remember) => { try { (remember ? localStorage : sessionStorage).setItem(STORE_KEY, code); } catch (e) {} },
+    clear: () => { try { localStorage.removeItem(STORE_KEY); sessionStorage.removeItem(STORE_KEY); } catch (e) {} },
+  };
+
+  let code = null;
+  let S = null;
+
+  async function fetchDashboard(c) {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_combatrix_dashboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY },
+      body: JSON.stringify({ p_code: c }),
+    });
+    if (!res.ok) throw new Error('server');
+    return res.json();
+  }
+
+  const errorText = (e) => ({
+    invalid_code: 'That code is not right.',
+    too_many_attempts: 'Too many wrong codes. Try again in 15 minutes.',
+  })[e] || 'Could not load the dashboard. Check your connection and try again.';
+
+  // ---- Code screen
+  $('gate-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const c = $('code').value.trim();
+    if (!c) return;
+    $('unlock').disabled = true; $('unlock').textContent = 'Checking…'; $('gate-err').textContent = '';
+    try {
+      const d = await fetchDashboard(c);
+      if (d && d.error) { $('gate-err').textContent = errorText(d.error); return; }
+      code = c; store.set(c, $('remember').checked);
+      showApp(d);
+    } catch (e) {
+      $('gate-err').textContent = errorText();
+    } finally {
+      $('unlock').disabled = false; $('unlock').textContent = 'Open dashboard';
+    }
+  });
+
+  function lock(message) {
+    code = null; S = null; store.clear();
+    $('app').hidden = true; $('gate').hidden = false;
+    $('code').value = ''; $('gate-err').textContent = message || '';
+    $('code').focus();
+  }
+  $('lock').addEventListener('click', () => lock());
+
+  $('refresh').addEventListener('click', async () => {
+    if (!code) return;
+    const b = $('refresh'); b.disabled = true; b.textContent = 'Refreshing…';
+    try {
+      const d = await fetchDashboard(code);
+      if (d && d.error) return lock(errorText(d.error));
+      render(d);
+    } catch (e) {
+      $('stamp').textContent = 'Refresh failed';
+    } finally { b.disabled = false; b.textContent = 'Refresh'; }
+  });
+
+  function showApp(d) {
+    $('gate').hidden = true; $('app').hidden = false;
+    render(d);
+  }
+
+  // ---- Formatting
+  const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+  const num = new Intl.NumberFormat('en-IN');
+  const money = (v) => (v == null || isNaN(Number(v)) ? '—' : inr.format(Number(v)));
+  const pct = (v) => Math.round(Number(v) * 100) + '%';
+  const fmtDate = (s) => {
+    if (!s) return '—';
+    const d = new Date(String(s).slice(0, 10) + 'T00:00:00Z');
+    return isNaN(d) ? String(s) : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  };
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+
+  // ---- Tables (all data is written as text, never as HTML)
+  const cell = (tr, text, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.append(td); return td; };
+  const selectCell = (td) => { try { const r = document.createRange(); r.selectNodeContents(td.firstChild); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (e) {} };
+  const phoneCell = (tr, phone) => {
+    const td = document.createElement('td');
+    td.className = 'phone';
+    const text = phone == null ? '' : String(phone).trim();
+    const valid = text.replace(/\D/g, '').length >= 10;
+    td.append(document.createTextNode(valid ? text : '—'));
+    if (valid) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'copy'; b.textContent = 'Copy';
+      b.setAttribute('aria-label', 'Copy ' + text);
+      b.addEventListener('click', () => {
+        const done = () => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1400); };
+        try { navigator.clipboard.writeText(text.replace(/\s/g, '')).then(done, () => selectCell(td)); }
+        catch (e) { selectCell(td); }
+      });
+      td.append(b);
+    }
+    tr.append(td);
+  };
+  const empty = (tbody, cols, text) => { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cols; td.className = 'empty'; td.textContent = text; tr.append(td); tbody.append(tr); };
+  const match = (q) => (r) => !q || String(r.name || '').toLowerCase().includes(q) || String(r.phone || '').replace(/\s/g, '').includes(q.replace(/\s/g, ''));
+
+  function drawExpired() {
+    const q = $('q-expired').value.trim().toLowerCase();
+    const tbody = $('expired-table').querySelector('tbody'); tbody.replaceChildren();
+    const rows = ((S && S.expired) || []).filter(match(q));
+    if (!rows.length) return empty(tbody, 5, q ? 'No members match that search.' : 'No members are pending.');
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      phoneCell(tr, r.phone);
+      cell(tr, r.name ?? '—');
+      cell(tr, fmtDate(r.expired_on), 'dt');
+      const d = r.days_since_expiry == null ? null : Number(r.days_since_expiry);
+      cell(tr, d == null ? '—' : num.format(d), 'num' + (d != null && d <= 30 ? ' red' : ''));
+      cell(tr, money(r.last_fee), 'num hide-narrow');
+      tbody.append(tr);
+    });
+  }
+
+  function drawExpiring() {
+    const tbody = $('expiring-table').querySelector('tbody'); tbody.replaceChildren();
+    const rows = (S && S.expiring) || [];
+    if (!rows.length) return empty(tbody, 5, 'No memberships end in the next 30 days.');
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      phoneCell(tr, r.phone);
+      cell(tr, r.name ?? '—');
+      cell(tr, fmtDate(r.expires_on), 'dt');
+      const n = Number(r.days_left);
+      const td = cell(tr, '', 'num');
+      if (n === 0) { const p = document.createElement('span'); p.className = 'pill today'; p.textContent = 'Today'; td.append(p); }
+      else { td.textContent = n === 1 ? 'Tomorrow' : num.format(n); if (n <= 3) td.classList.add('red'); else if (n <= 7) td.classList.add('amber'); }
+      cell(tr, money(r.current_fee), 'num hide-narrow');
+      tbody.append(tr);
+    });
+  }
+
+  function drawInactive() {
+    const q = $('q-inactive').value.trim().toLowerCase();
+    const tbody = $('inactive-table').querySelector('tbody'); tbody.replaceChildren();
+    const rows = ((S && S.inactive) || []).filter(match(q));
+    if (!rows.length) return empty(tbody, 6, q ? 'No members match that search.' : 'No inactive members.');
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      phoneCell(tr, r.phone);
+      cell(tr, r.name ?? '—');
+      cell(tr, fmtDate(r.last_expired_on), 'dt');
+      cell(tr, r.days_since_expiry == null ? '—' : num.format(Number(r.days_since_expiry)), 'num');
+      cell(tr, money(r.last_fee), 'num hide-narrow');
+      cell(tr, fmtDate(r.date_joined), 'dt hide-narrow');
+      tbody.append(tr);
+    });
+  }
+
+  $('q-expired').addEventListener('input', drawExpired);
+  $('q-inactive').addEventListener('input', drawInactive);
+
+  function render(d) {
+    S = d || {};
+    const g = new Date(String(S.generated_at || '') + '+05:30');
+    const stampText = isNaN(g) ? '' : g.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST';
+    set('stamp', stampText ? 'Updated ' + stampText : 'Live');
+    set('foot', 'Live data from the Combatrix member records, loaded ' + (stampText || 'just now') + '. Days ago and days left are counted from today (India time). Press Refresh for the latest figures.');
+
+    const s = S.summary || {};
+    set('l-pending', num.format(s.pending ?? 0));
+    set('l-exp7', num.format(s.expiring_7d ?? 0));
+    set('t-pending', num.format(s.pending ?? 0));
+    set('t-active', num.format(s.active ?? 0));
+    set('t-exp7', num.format(s.expiring_7d ?? 0));
+    set('t-exp30', num.format(s.expiring_30d ?? 0));
+    set('n-inactive', num.format(s.inactive ?? 0));
+
+    const tm = (S.earnings || []).find((r) => r.period === 'this_month') || {};
+    const lm = (S.earnings || []).find((r) => r.period === 'last_month') || {};
+    set('t-month', tm.month_label || 'this month');
+    set('t-total', money(tm.total));
+    set('t-payments', num.format(tm.payments ?? 0));
+    set('e-month', tm.month_label || 'this month');
+    set('e-c', money(tm.combatrix)); set('e-cp', pct(tm.combatrix_pct || 0));
+    set('e-f', money(tm.fitshala)); set('e-fp', pct(tm.fitshala_pct || 0));
+    set('e-t', money(tm.total)); set('e-n', num.format(tm.payments ?? 0));
+    $('seg-c').style.width = (Number(tm.combatrix_pct) || 0) * 100 + '%';
+    $('seg-f').style.width = (Number(tm.fitshala_pct) || 0) * 100 + '%';
+    set('p-month', lm.month_label || '—'); set('p-t', money(lm.total)); set('p-c', money(lm.combatrix)); set('p-f', money(lm.fitshala));
+
+    drawExpired(); drawExpiring(); drawInactive();
+  }
+
+  // ---- Tabs
+  const tabs = [...document.querySelectorAll('.tabs [data-view]')];
+  const show = (name) => tabs.forEach((t) => { const on = t.dataset.view === name; t.setAttribute('aria-selected', String(on)); $(t.dataset.view).hidden = !on; });
+  tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); history.replaceState(null, '', '#' + t.dataset.view); }));
+  const h = location.hash.slice(1);
+  if (tabs.some((t) => t.dataset.view === h)) show(h);
+
+  // ---- Auto-unlock with a remembered code
+  const saved = store.get();
+  if (saved) {
+    $('unlock').disabled = true; $('unlock').textContent = 'Opening…';
+    fetchDashboard(saved).then((d) => {
+      if (d && d.error) return lock(d.error === 'invalid_code' ? 'The saved code no longer works. Enter the new one.' : errorText(d.error));
+      code = saved; showApp(d);
+    }).catch(() => { $('gate-err').textContent = errorText(); })
+      .finally(() => { $('unlock').disabled = false; $('unlock').textContent = 'Open dashboard'; });
+  }
+})();
+</script>
+</body>
+</html>
