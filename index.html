@@ -85,8 +85,15 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle;
 tr:last-child td { border-bottom: 0; }
 .num { text-align: right; white-space: nowrap; }
 .dt { white-space: nowrap; }
-.phone { white-space: nowrap; color: var(--muted); user-select: all; }
-.copy { font: inherit; font-size: 11px; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; user-select: none; }
+.phone { white-space: nowrap; color: var(--muted); }
+.ph { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: copy; border-bottom: 1px dashed var(--line); }
+.ph:hover { color: var(--ink); border-bottom-color: var(--muted); }
+.ph:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+td.cp, th.cp { width: 1%; text-align: right; padding-left: 0; }
+.head { display: flex; justify-content: space-between; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
+.btn.ghost.sm { padding: 4px 10px; font-size: 12px; white-space: nowrap; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.copy { font: inherit; font-size: 11px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; user-select: none; }
 .copy:hover { color: var(--ink); }
 .red { color: var(--bad); font-weight: 600; }
 .amber { color: var(--warn); font-weight: 600; }
@@ -127,8 +134,10 @@ footer { font-size: 12px; color: var(--muted); }
 details.tbl { margin-top: 12px; font-size: 13px; }
 details.tbl summary { cursor: pointer; color: var(--muted); }
 details.tbl table { margin-top: 8px; }
+.prev details.tbl .scroll { max-height: 22rem; }
+.prev tfoot td { font-weight: 600; color: var(--ink); border-top: 1px solid var(--line); }
 
-@media (max-width: 30rem) { .hide-narrow { display: none; } .big { font-size: 36px; } }
+@media (max-width: 30rem) { .hide-narrow { display: none; } td.when { white-space: normal; } .big { font-size: 36px; } }
 </style>
 </head>
 <body>
@@ -189,33 +198,33 @@ details.tbl table { margin-top: 8px; }
 
     <div class="grid">
       <div class="card">
-        <h2>Fees expired</h2>
+        <div class="head"><h2>Fees expired</h2><button class="btn ghost sm" type="button" data-copy-list="expired">Copy all</button></div>
         <p class="note">Members marked pending. Most recently expired first.</p>
         <input class="search" id="q-expired" type="search" placeholder="Search by name or phone" aria-label="Search pending members">
         <div class="scroll" data-rows="5">
           <table id="expired-table">
-            <thead><tr><th>Phone</th><th>Member</th><th>Expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th></tr></thead>
+            <thead><tr><th>Phone</th><th>Member</th><th class="hide-narrow">Expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th><th class="cp"><span class="sr">Copy row</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <h2>Expiring soon</h2>
+        <div class="head"><h2>Expiring soon</h2><button class="btn ghost sm" type="button" data-copy-list="expiring">Copy all</button></div>
         <p class="note">Active memberships ending in the next 30 days. Soonest first.</p>
         <div class="scroll" data-rows="5">
           <table id="expiring-table">
-            <thead><tr><th>Phone</th><th>Member</th><th>Expires on</th><th class="num">Days left</th><th class="num hide-narrow">Fee</th></tr></thead>
+            <thead><tr><th>Phone</th><th>Member</th><th class="hide-narrow">Expires on</th><th class="num">Days left</th><th class="num hide-narrow">Fee</th><th class="cp"><span class="sr">Copy row</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
       <div class="card">
-        <h2>Registered</h2>
+        <div class="head"><h2>Registered</h2><button class="btn ghost sm" type="button" data-copy-list="registered">Copy all</button></div>
         <p class="note">Signed the waiver form but haven't paid yet. Newest first; the time is when they submitted the form.</p>
         <input class="search" id="q-registered" type="search" placeholder="Search by name or phone" aria-label="Search registered people">
         <div class="scroll" data-rows="5">
           <table id="registered-table">
-            <thead><tr><th>Phone</th><th>Name</th><th>Signed form</th><th class="num">Days ago</th></tr></thead>
+            <thead><tr><th>Phone</th><th>Name</th><th>Signed form</th><th class="num hide-narrow">Days ago</th><th class="cp"><span class="sr">Copy row</span></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -223,7 +232,7 @@ details.tbl table { margin-top: 8px; }
     </div>
 
     <div class="card">
-      <h2>New members vs churn</h2>
+      <div class="head"><h2>New members vs churn</h2><button class="btn ghost sm" type="button" id="copy-chart">Copy image</button></div>
       <p class="note">New: first paid membership started that month. Churned: membership ended that month and wasn't renewed within 30 days. Churn rate is out of members active on the 1st.</p>
       <div class="legend">
         <span><span class="sw" style="background:var(--join)"></span>New members</span>
@@ -264,18 +273,29 @@ details.tbl table { margin-top: 8px; }
       <div class="split" role="img" aria-label="Combatrix and Fitshala share of this month's earnings">
         <div id="seg-c" style="background:var(--share-c)"></div><div id="seg-f" style="background:var(--share-f)"></div>
       </div>
-      <div class="prev">Last month (<span id="p-month">—</span>): <b id="p-t">—</b> total · Combatrix <span id="p-c">—</span> · Fitshala <span id="p-f">—</span></div>
+      <div class="prev">
+        <div class="head"><span>Last month (<span id="p-month">—</span>): <b id="p-t">—</b> total · Combatrix <span id="p-c">—</span> · Fitshala <span id="p-f">—</span></span><button class="btn ghost sm" type="button" id="copy-earnings">Copy with breakup</button></div>
+        <details class="tbl">
+          <summary>Show each payment (<span id="p-n">0</span>)</summary>
+          <div class="scroll">
+            <table id="pay-table">
+              <thead><tr><th>Member</th><th class="hide-narrow">Started</th><th class="num">Fee</th><th class="num">Combatrix</th><th class="num">Fitshala</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </section>
 
   <section class="view" id="inactive" role="tabpanel" aria-labelledby="tab-inactive" hidden>
     <div class="card">
-      <h2>Inactive members</h2>
+      <div class="head"><h2>Inactive members</h2><button class="btn ghost sm" type="button" data-copy-list="inactive">Copy all</button></div>
       <p class="note">Members marked inactive, with their last membership. Most recently expired first.</p>
       <input class="search" id="q-inactive" type="search" placeholder="Search by name or phone" aria-label="Search inactive members">
       <div class="scroll tall">
         <table id="inactive-table">
-          <thead><tr><th>Phone</th><th>Member</th><th>Last expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th><th class="hide-narrow">Joined</th></tr></thead>
+          <thead><tr><th>Phone</th><th>Member</th><th class="hide-narrow">Last expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th><th class="hide-narrow">Joined</th><th class="cp"><span class="sr">Copy row</span></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -394,26 +414,74 @@ details.tbl table { margin-top: 8px; }
 
   // ---- Tables (all data is written as text, never as HTML)
   const cell = (tr, text, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.append(td); return td; };
-  const selectCell = (td) => { try { const r = document.createRange(); r.selectNodeContents(td.firstChild); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } catch (e) {} };
+  // ---- Copying. Rich copies carry an HTML table (pastes as columns in Sheets, Docs, Gmail)
+  // plus readable plain text (WhatsApp, notes).
+  const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const htmlTable = (head, rows, foot) => '<table>' +
+    (head.length ? '<thead><tr>' + head.map((h) => '<th>' + esc(h) + '</th>').join('') + '</tr></thead>' : '') +
+    '<tbody>' + rows.map((r) => '<tr>' + r.map((c) => '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody>' +
+    (foot ? '<tfoot><tr>' + foot.map((c) => '<td><b>' + esc(c) + '</b></td>').join('') + '</tr></tfoot>' : '') + '</table>';
+  const fallbackCopy = (text) => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.append(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove(); return ok;
+  };
+  async function copyText(text, html) {
+    if (html && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/html': new Blob(['<meta charset="utf-8">' + html], { type: 'text/html' }),
+        })]);
+        return true;
+      } catch (e) {}
+    }
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+    return fallbackCopy(text);
+  }
+  const flash = (b, ok, label) => {
+    if (!b.dataset.label) b.dataset.label = b.textContent;
+    b.textContent = ok ? (label || 'Copied') : 'Copy failed';
+    clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = b.dataset.label; }, 1500);
+  };
+  const cleanPhone = (p) => { const t = p == null ? '' : String(p).replace(/\s/g, ''); return t.replace(/\D/g, '').length >= 10 ? t : ''; };
+  // A member as copied: name, phone and (except for the registered list) fee.
+  const memberCells = (m) => [m.name || '', cleanPhone(m.phone), ...(m.noFee ? [] : [m.fee == null ? '' : money(m.fee)])];
+  const plainLine = (cells) => cells.filter(Boolean).join(' · ');
+
   const phoneCell = (tr, phone) => {
     const td = document.createElement('td');
     td.className = 'phone';
-    const text = phone == null ? '' : String(phone).trim();
-    const valid = text.replace(/\D/g, '').length >= 10;
-    td.append(document.createTextNode(valid ? text : '—'));
-    if (valid) {
+    const t = cleanPhone(phone);
+    if (!t) td.textContent = '—';
+    else {
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'copy'; b.textContent = 'Copy';
-      b.setAttribute('aria-label', 'Copy ' + text);
-      b.addEventListener('click', () => {
-        const done = () => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1400); };
-        try { navigator.clipboard.writeText(text.replace(/\s/g, '')).then(done, () => selectCell(td)); }
-        catch (e) { selectCell(td); }
-      });
+      b.type = 'button'; b.className = 'ph'; b.textContent = String(phone).trim();
+      b.title = 'Copy number'; b.setAttribute('aria-label', 'Copy number ' + t);
+      b.addEventListener('click', () => copyText(t).then((ok) => flash(b, ok)));
       td.append(b);
     }
     tr.append(td);
   };
+  const rowCopyCell = (tr, m) => {
+    const td = document.createElement('td'); td.className = 'cp';
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'copy'; b.textContent = 'Copy';
+    b.setAttribute('aria-label', 'Copy name, phone' + (m.noFee ? '' : ' and fee') + ' for ' + (m.name || 'this member'));
+    b.addEventListener('click', () => { const c = memberCells(m); copyText(plainLine(c), htmlTable([], [c])).then((ok) => flash(b, ok)); });
+    td.append(b); tr.append(td);
+  };
+  // What each list currently shows (after search), for "Copy all".
+  const shown = {};
+  document.querySelectorAll('[data-copy-list]').forEach((b) => b.addEventListener('click', () => {
+    const list = shown[b.dataset.copyList] || [];
+    if (!list.length) return flash(b, true, 'Nothing to copy');
+    const rows = list.map(memberCells);
+    const head = list[0].noFee ? ['Name', 'Phone'] : ['Name', 'Phone', 'Fee'];
+    copyText(rows.map(plainLine).join('\n'), htmlTable(head, rows)).then((ok) => flash(b, ok, 'Copied ' + rows.length));
+  }));
   const empty = (tbody, cols, text) => { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cols; td.className = 'empty'; td.textContent = text; tr.append(td); tbody.append(tr); };
   const match = (q) => (r) => !q || String(r.name || '').toLowerCase().includes(q) || String(r.phone || '').replace(/\s/g, '').includes(q.replace(/\s/g, ''));
 
@@ -421,15 +489,17 @@ details.tbl table { margin-top: 8px; }
     const q = $('q-expired').value.trim().toLowerCase();
     const tbody = $('expired-table').querySelector('tbody'); tbody.replaceChildren();
     const rows = ((S && S.expired) || []).filter(match(q));
-    if (!rows.length) return empty(tbody, 5, q ? 'No members match that search.' : 'No members are pending.');
-    rows.forEach((r) => {
+    shown.expired = rows.map((r) => ({ name: r.name, phone: r.phone, fee: r.last_fee }));
+    if (!rows.length) return empty(tbody, 6, q ? 'No members match that search.' : 'No members are pending.');
+    rows.forEach((r, i) => {
       const tr = document.createElement('tr');
       phoneCell(tr, r.phone);
       cell(tr, r.name ?? '—');
-      cell(tr, fmtDate(r.expired_on), 'dt');
+      cell(tr, fmtDate(r.expired_on), 'dt hide-narrow');
       const d = r.days_since_expiry == null ? null : Number(r.days_since_expiry);
       cell(tr, d == null ? '—' : num.format(d), 'num' + (d != null && d <= 30 ? ' red' : ''));
       cell(tr, money(r.last_fee), 'num hide-narrow');
+      rowCopyCell(tr, shown.expired[i]);
       tbody.append(tr);
     });
   }
@@ -437,17 +507,19 @@ details.tbl table { margin-top: 8px; }
   function drawExpiring() {
     const tbody = $('expiring-table').querySelector('tbody'); tbody.replaceChildren();
     const rows = (S && S.expiring) || [];
-    if (!rows.length) return empty(tbody, 5, 'No memberships end in the next 30 days.');
-    rows.forEach((r) => {
+    shown.expiring = rows.map((r) => ({ name: r.name, phone: r.phone, fee: r.current_fee }));
+    if (!rows.length) return empty(tbody, 6, 'No memberships end in the next 30 days.');
+    rows.forEach((r, i) => {
       const tr = document.createElement('tr');
       phoneCell(tr, r.phone);
       cell(tr, r.name ?? '—');
-      cell(tr, fmtDate(r.expires_on), 'dt');
+      cell(tr, fmtDate(r.expires_on), 'dt hide-narrow');
       const n = Number(r.days_left);
       const td = cell(tr, '', 'num');
       if (n === 0) { const p = document.createElement('span'); p.className = 'pill today'; p.textContent = 'Today'; td.append(p); }
       else { td.textContent = n === 1 ? 'Tomorrow' : num.format(n); if (n <= 3) td.classList.add('red'); else if (n <= 7) td.classList.add('amber'); }
       cell(tr, money(r.current_fee), 'num hide-narrow');
+      rowCopyCell(tr, shown.expiring[i]);
       tbody.append(tr);
     });
   }
@@ -456,15 +528,17 @@ details.tbl table { margin-top: 8px; }
     const q = $('q-inactive').value.trim().toLowerCase();
     const tbody = $('inactive-table').querySelector('tbody'); tbody.replaceChildren();
     const rows = ((S && S.inactive) || []).filter(match(q));
-    if (!rows.length) return empty(tbody, 6, q ? 'No members match that search.' : 'No inactive members.');
-    rows.forEach((r) => {
+    shown.inactive = rows.map((r) => ({ name: r.name, phone: r.phone, fee: r.last_fee }));
+    if (!rows.length) return empty(tbody, 7, q ? 'No members match that search.' : 'No inactive members.');
+    rows.forEach((r, i) => {
       const tr = document.createElement('tr');
       phoneCell(tr, r.phone);
       cell(tr, r.name ?? '—');
-      cell(tr, fmtDate(r.last_expired_on), 'dt');
+      cell(tr, fmtDate(r.last_expired_on), 'dt hide-narrow');
       cell(tr, r.days_since_expiry == null ? '—' : num.format(Number(r.days_since_expiry)), 'num');
       cell(tr, money(r.last_fee), 'num hide-narrow');
       cell(tr, fmtDate(r.date_joined), 'dt hide-narrow');
+      rowCopyCell(tr, shown.inactive[i]);
       tbody.append(tr);
     });
   }
@@ -473,14 +547,16 @@ details.tbl table { margin-top: 8px; }
     const q = $('q-registered').value.trim().toLowerCase();
     const tbody = $('registered-table').querySelector('tbody'); tbody.replaceChildren();
     const rows = ((S && S.registered) || []).filter(match(q));
-    if (!rows.length) return empty(tbody, 4, q ? 'No one matches that search.' : 'No one is waiting to pay.');
-    rows.forEach((r) => {
+    shown.registered = rows.map((r) => ({ name: r.name, phone: r.phone, noFee: true }));
+    if (!rows.length) return empty(tbody, 5, q ? 'No one matches that search.' : 'No one is waiting to pay.');
+    rows.forEach((r, i) => {
       const tr = document.createElement('tr');
       phoneCell(tr, r.phone);
       cell(tr, r.name ?? '—');
-      cell(tr, fmtDateTime(r.signed_at), 'dt');
+      cell(tr, fmtDateTime(r.signed_at), 'dt when');
       const d = r.days_since_signed == null ? null : Number(r.days_since_signed);
-      cell(tr, d == null ? '—' : num.format(d), 'num' + (d != null && d <= 7 ? ' amber' : ''));
+      cell(tr, d == null ? '—' : num.format(d), 'num hide-narrow' + (d != null && d <= 7 ? ' amber' : ''));
+      rowCopyCell(tr, shown.registered[i]);
       tbody.append(tr);
     });
   }
@@ -535,6 +611,144 @@ details.tbl table { margin-top: 8px; }
     chart.setAttribute('aria-label', 'New members and churn by month: ' + summary.join(', '));
   }
 
+  // ---- Last month's earnings, one line per payment
+  const lastMonth = () => ((S && S.earnings) || []).find((r) => r.period === 'last_month') || {};
+  const lastPayments = () => ((S && S.payments) || []).filter((p) => p.period === 'last_month');
+  function drawPayments() {
+    const pays = lastPayments(), lm = lastMonth();
+    const table = $('pay-table'), tbody = table.querySelector('tbody'); tbody.replaceChildren();
+    const old = table.querySelector('tfoot'); if (old) old.remove();
+    set('p-n', num.format(pays.length));
+    if (!pays.length) return empty(tbody, 5, 'No payments last month.');
+    pays.forEach((p) => {
+      const tr = document.createElement('tr');
+      cell(tr, p.name ?? '—'); cell(tr, fmtDate(p.start_date), 'dt hide-narrow');
+      cell(tr, money(p.fee), 'num'); cell(tr, money(p.combatrix), 'num'); cell(tr, money(p.fitshala), 'num');
+      tbody.append(tr);
+    });
+    const tf = document.createElement('tfoot'), tr = document.createElement('tr');
+    cell(tr, 'Total'); cell(tr, '', 'hide-narrow');
+    cell(tr, money(lm.total), 'num'); cell(tr, money(lm.combatrix), 'num'); cell(tr, money(lm.fitshala), 'num');
+    tf.append(tr); table.append(tf);
+  }
+  $('copy-earnings').addEventListener('click', () => {
+    const b = $('copy-earnings'), lm = lastMonth(), pays = lastPayments();
+    const n = lm.payments ?? pays.length;
+    const summary = [
+      'Earnings – ' + (lm.month_label || 'last month'),
+      'Combatrix: ' + money(lm.combatrix) + ' (' + pct(lm.combatrix_pct || 0) + ')',
+      'Fitshala: ' + money(lm.fitshala) + ' (' + pct(lm.fitshala_pct || 0) + ')',
+      'Total: ' + money(lm.total) + ' (' + num.format(n) + (n === 1 ? ' payment)' : ' payments)'),
+    ];
+    const rows = pays.map((p) => [p.name || '', fmtDate(p.start_date), money(p.fee), money(p.combatrix), money(p.fitshala)]);
+    const text = summary.join('\n') + (rows.length ? '\n\n' + pays.map((p, i) =>
+      (i + 1) + '. ' + (p.name || '') + ' · ' + money(p.fee) + ' (Combatrix ' + money(p.combatrix) + ', Fitshala ' + money(p.fitshala) + ')').join('\n') : '');
+    const html = '<p><b>' + esc(summary[0]) + '</b><br>' + summary.slice(1).map(esc).join('<br>') + '</p>' +
+      htmlTable(['Member', 'Started', 'Fee', 'Combatrix', 'Fitshala'], rows, ['Total', '', money(lm.total), money(lm.combatrix), money(lm.fitshala)]);
+    copyText(text, html).then((ok) => flash(b, ok));
+  });
+
+  // ---- Churn chart as a PNG. The on-page chart is plain HTML, so it is redrawn on a canvas,
+  // always in light colours so it reads well wherever it is pasted.
+  let chartBlob = null;
+  async function chartPng() {
+    const months = (S && S.churn) || [];
+    try { await document.fonts.ready; } catch (e) {}
+    const W = 720, H = 396, pad = 28, k = 2;
+    const cv = document.createElement('canvas'); cv.width = W * k; cv.height = H * k;
+    const x = cv.getContext('2d'); x.scale(k, k);
+    const C = { bg: '#ffffff', ink: '#16191d', muted: '#5d6570', line: '#e1e4e8', join: '#2f6db5', churn: '#b3262f' };
+    const font = (w, size, display) => w + ' ' + size + 'px ' + (display
+      ? '"Barlow Condensed", "Arial Narrow", Arial, sans-serif'
+      : 'Figtree, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif');
+    const text = (t, tx, ty, f, color, align) => { x.font = f; x.fillStyle = color; x.textAlign = align || 'left'; x.fillText(t, tx, ty); };
+    // Rectangle with rounded top corners only (data end), square at the baseline.
+    const topBar = (bx, by, bw, bh, r) => {
+      r = Math.min(r, bh, bw / 2);
+      x.beginPath(); x.moveTo(bx, by + bh); x.lineTo(bx, by + r); x.arcTo(bx, by, bx + r, by, r);
+      x.lineTo(bx + bw - r, by); x.arcTo(bx + bw, by, bx + bw, by + r, r); x.lineTo(bx + bw, by + bh); x.closePath();
+    };
+    const hatch = (bx, by, bw, bh, rounded) => {
+      x.save();
+      if (rounded) topBar(bx, by, bw, bh, 4); else { x.beginPath(); x.rect(bx, by, bw, bh); }
+      x.clip();
+      x.strokeStyle = C.churn; x.lineWidth = 2;
+      for (let d = -bh; d < bw + bh; d += 6) { x.beginPath(); x.moveTo(bx + d, by + bh); x.lineTo(bx + d + bh, by); x.stroke(); }
+      x.lineWidth = 2; x.strokeStyle = C.churn;
+      if (rounded) topBar(bx, by, bw, bh, 4); else { x.beginPath(); x.rect(bx, by, bw, bh); }
+      x.stroke();
+      x.restore();
+    };
+
+    x.fillStyle = C.bg; x.fillRect(0, 0, W, H);
+    text('New members vs churn', pad, 46, font(600, 28, true), C.ink);
+    const span = months.length ? months[0].month_label + ' – ' + months[months.length - 1].month_label : '';
+    const today = S && S.summary && S.summary.today;
+    text('Combatrix · ' + span + (today ? ' · as of ' + fmtDate(today) : ''), pad, 68, font(400, 13), C.muted);
+
+    let lx = pad; const ly = 96;
+    const legend = (draw, label) => {
+      draw(lx, ly - 11, 12, 12);
+      text(label, lx + 18, ly, font(400, 13), C.muted);
+      lx += 18 + x.measureText(label).width + 22;
+    };
+    legend((a, b, w, h) => { x.fillStyle = C.join; x.fillRect(a, b, w, h); }, 'New members');
+    legend((a, b, w, h) => { x.fillStyle = C.churn; x.fillRect(a, b, w, h); }, 'Churned');
+    legend((a, b, w, h) => hatch(a, b, w, h, false), 'Ended, may still renew');
+
+    const base = 316, maxBar = 160, n = Math.max(1, months.length);
+    const colW = (W - pad * 2) / n, bw = 28, gap = 4;
+    const max = Math.max(1, ...months.map((m) => Math.max(m.joined || 0, (m.churned || 0) + (m.still_pending || 0))));
+    const hgt = (v) => Math.max(3, (v / max) * maxBar);
+    const rate = (m) => (m.active_start ? Math.round((m.churned / m.active_start) * 100) + '%' : '—');
+
+    months.forEach((m, i) => {
+      const j = m.joined || 0, c = m.churned || 0, p = m.still_pending || 0;
+      const cx = pad + colW * (i + 0.5);
+      const jx = cx - gap / 2 - bw, chx = cx + gap / 2;
+      // New members
+      let top = base;
+      if (j) { top = base - hgt(j); x.fillStyle = C.join; topBar(jx, top, bw, base - top, 4); x.fill(); }
+      text(String(j), jx + bw / 2, top - 6, font(600, 12), C.ink, 'center');
+      // Churned, with "may still renew" stacked on top (2px gap)
+      top = base;
+      if (c) { top = base - hgt(c); x.fillStyle = C.churn; if (p) x.fillRect(chx, top, bw, base - top); else { topBar(chx, top, bw, base - top, 4); x.fill(); } }
+      if (p) { const ph = hgt(p), py = top - (c ? 2 : 0) - ph; hatch(chx + 1, py + 1, bw - 2, ph - 1, true); top = py; }
+      text(c + (p ? '+' + p : ''), chx + bw / 2, top - 6, font(600, 12), C.ink, 'center');
+      // Month and churn rate
+      text(m.month_label.split(' ')[0], cx, base + 20, font(600, 12), C.ink, 'center');
+      text(rate(m) + (p ? ' so far' : ''), cx, base + 36, font(400, 12), C.muted, 'center');
+    });
+    x.fillStyle = C.line; x.fillRect(pad, base, W - pad * 2, 1);
+    text('Churned: membership ended that month and wasn’t renewed within 30 days. Rate is out of members active on the 1st.',
+      pad, H - 16, font(400, 11), C.muted);
+    return new Promise((res) => cv.toBlob(res, 'image/png'));
+  }
+  const coarse = () => window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  $('copy-chart').addEventListener('click', async () => {
+    const b = $('copy-chart');
+    const blob = chartBlob ? Promise.resolve(chartBlob) : chartPng();
+    const name = 'combatrix-new-vs-churn' + (S && S.summary && S.summary.today ? '-' + S.summary.today : '') + '.png';
+    // Phones: the share sheet (WhatsApp etc.). Needs the image ready, so it uses the pre-drawn one.
+    if (coarse() && chartBlob && navigator.canShare) {
+      const file = new File([chartBlob], name, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: 'New members vs churn' }); return flash(b, true, 'Shared'); }
+        catch (e) { if (e && e.name === 'AbortError') return; }
+      }
+    }
+    if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); return flash(b, true, 'Copied image'); }
+      catch (e) {}
+    }
+    // Last resort: download the PNG.
+    const url = URL.createObjectURL(await blob);
+    const a = document.createElement('a'); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    flash(b, true, 'Downloaded');
+  });
+  if (coarse()) { $('copy-chart').textContent = 'Share image'; }
+
   $('q-expired').addEventListener('input', () => { drawExpired(); fitRows(); });
   $('q-registered').addEventListener('input', () => { drawRegistered(); fitRows(); });
   $('q-inactive').addEventListener('input', drawInactive);
@@ -572,7 +786,8 @@ details.tbl table { margin-top: 8px; }
     set('t-registered', num.format(s.registered ?? reg.length));
     set('t-reg30', num.format(reg.filter((r) => r.days_since_signed != null && Number(r.days_since_signed) <= 30).length));
 
-    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn();
+    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn(); drawPayments();
+    chartBlob = null; chartPng().then((bl) => { chartBlob = bl; }).catch(() => {});
     fitRows();
   }
 
