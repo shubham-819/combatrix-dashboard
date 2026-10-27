@@ -12,7 +12,7 @@
 :root {
   --bg: #f5f6f7; --panel: #ffffff; --ink: #16191d; --muted: #5d6570; --line: #e1e4e8;
   --accent: #b3262f; --accent-soft: #f6e3e4; --share-c: #b3262f; --share-f: #3d5a80;
-  --bad: #c0262f; --warn: #a96200; --ok: #1f7a4d; --track: #e9ecef;
+  --bad: #c0262f; --warn: #a96200; --ok: #1f7a4d; --track: #e9ecef; --join: #2f6db5;
   --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --radius: 10px; color-scheme: light;
@@ -21,13 +21,13 @@
   :root:not([data-theme="light"]) {
     --bg: #111316; --panel: #1a1d21; --ink: #eceef1; --muted: #9aa3ad; --line: #2b3036;
     --accent: #ef5a62; --accent-soft: #3a1d20; --share-c: #ef5a62; --share-f: #7fa3cf;
-    --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; color-scheme: dark;
+    --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; --join: #4f8fe0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #111316; --panel: #1a1d21; --ink: #eceef1; --muted: #9aa3ad; --line: #2b3036;
   --accent: #ef5a62; --accent-soft: #3a1d20; --share-c: #ef5a62; --share-f: #7fa3cf;
-  --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; color-scheme: dark;
+  --bad: #f0646b; --warn: #e2a443; --ok: #4fc58a; --track: #262a30; --join: #4f8fe0; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
@@ -102,6 +102,32 @@ tr:last-child td { border-bottom: 0; }
 .prev b { color: var(--ink); font-weight: 600; }
 footer { font-size: 12px; color: var(--muted); }
 
+/* Churn chart */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.legend .sw { width: 12px; height: 12px; }
+.sw.hatch, .seg.pend { background: repeating-linear-gradient(135deg, var(--accent) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1px var(--accent); }
+.chart { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 8px; height: 190px; border-bottom: 1px solid var(--line); }
+.chart .col { position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; outline: none; border-radius: 6px; }
+.chart .col:hover, .chart .col:focus-visible { background: var(--track); }
+.chart .pair { display: flex; align-items: flex-end; justify-content: center; gap: 4px; width: 100%; }
+.chart .bw { display: flex; flex-direction: column; align-items: center; width: min(28px, 42%); }
+.chart .val { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; margin-bottom: 3px; white-space: nowrap; }
+.chart .stack { width: 100%; display: flex; flex-direction: column; gap: 2px; }
+.chart .seg { width: 100%; }
+.chart .seg.churn { background: var(--accent); }
+.chart .seg.join { background: var(--join); }
+.chart .seg.top { border-radius: 4px 4px 0 0; }
+.xl { display: grid; grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); gap: 8px; text-align: center; font-size: 12px; color: var(--muted); padding-top: 6px; font-variant-numeric: tabular-nums; }
+.xl b { display: block; color: var(--ink); font-weight: 600; }
+.tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 2; width: max-content; max-width: 14rem; background: var(--ink); color: var(--panel); font-size: 12px; line-height: 1.4; padding: 6px 9px; border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity .1s; }
+.chart .col:first-child .tip { left: 0; transform: none; }
+.chart .col:last-child .tip { left: auto; right: 0; transform: none; }
+.chart .col:hover .tip, .chart .col:focus-visible .tip { opacity: 1; }
+.chart .col .tip { bottom: auto; top: 0; }
+details.tbl { margin-top: 12px; font-size: 13px; }
+details.tbl summary { cursor: pointer; color: var(--muted); }
+details.tbl table { margin-top: 8px; }
+
 @media (max-width: 30rem) { .hide-narrow { display: none; } .big { font-size: 36px; } }
 </style>
 </head>
@@ -154,6 +180,11 @@ footer { font-size: 12px; color: var(--muted); }
         <div class="big" id="t-total">—</div>
         <div class="sub"><span id="t-payments">—</span> memberships starting this month</div>
       </div>
+      <div class="tile">
+        <div class="lbl">Registered, not paid</div>
+        <div class="big" id="t-registered">—</div>
+        <div class="sub"><span id="t-reg30">—</span> signed in the last 30 days</div>
+      </div>
     </div>
 
     <div class="grid">
@@ -161,7 +192,7 @@ footer { font-size: 12px; color: var(--muted); }
         <h2>Fees expired</h2>
         <p class="note">Members marked pending. Most recently expired first.</p>
         <input class="search" id="q-expired" type="search" placeholder="Search by name or phone" aria-label="Search pending members">
-        <div class="scroll">
+        <div class="scroll" data-rows="5">
           <table id="expired-table">
             <thead><tr><th>Phone</th><th>Member</th><th>Expired on</th><th class="num">Days ago</th><th class="num hide-narrow">Last fee</th></tr></thead>
             <tbody></tbody>
@@ -171,13 +202,43 @@ footer { font-size: 12px; color: var(--muted); }
       <div class="card">
         <h2>Expiring soon</h2>
         <p class="note">Active memberships ending in the next 30 days. Soonest first.</p>
-        <div class="scroll">
+        <div class="scroll" data-rows="5">
           <table id="expiring-table">
             <thead><tr><th>Phone</th><th>Member</th><th>Expires on</th><th class="num">Days left</th><th class="num hide-narrow">Fee</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
+      <div class="card">
+        <h2>Registered</h2>
+        <p class="note">Signed the waiver form but haven't paid yet. Newest first; the time is when they submitted the form.</p>
+        <input class="search" id="q-registered" type="search" placeholder="Search by name or phone" aria-label="Search registered people">
+        <div class="scroll" data-rows="5">
+          <table id="registered-table">
+            <thead><tr><th>Phone</th><th>Name</th><th>Signed form</th><th class="num">Days ago</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>New members vs churn</h2>
+      <p class="note">New: first paid membership started that month. Churned: membership ended that month and wasn't renewed within 30 days. Churn rate is out of members active on the 1st.</p>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--join)"></span>New members</span>
+        <span><span class="sw" style="background:var(--accent)"></span>Churned</span>
+        <span><span class="sw hatch"></span>Ended, may still renew</span>
+      </div>
+      <div class="chart" id="churn-chart" role="img" aria-label="New members and churn by month"></div>
+      <div class="xl" id="churn-x"></div>
+      <details class="tbl">
+        <summary>Show as table</summary>
+        <table id="churn-table">
+          <thead><tr><th>Month</th><th class="num">Active on 1st</th><th class="num">New</th><th class="num">Churned</th><th class="num">May still renew</th><th class="num">Churn rate</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </details>
     </div>
 
     <div class="card">
@@ -311,6 +372,25 @@ footer { font-size: 12px; color: var(--muted); }
     return isNaN(d) ? String(s) : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
   };
   const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  const fmtDateTime = (s) => {
+    if (!s) return '—';
+    const d = new Date(String(s) + '+05:30');
+    return isNaN(d) ? String(s) : d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Kolkata' });
+  };
+
+  // Lists marked data-rows="5" show five rows, then scroll.
+  function fitRows() {
+    document.querySelectorAll('.scroll[data-rows]').forEach((box) => {
+      const n = Number(box.dataset.rows);
+      const head = box.querySelector('thead');
+      const rows = [...box.querySelectorAll('tbody tr')];
+      if (!head || !head.offsetHeight) return; // hidden tab; refit when shown
+      if (rows.length <= n) { box.style.maxHeight = ''; return; }
+      const h = head.offsetHeight + rows.slice(0, n).reduce((a, r) => a + r.offsetHeight, 0);
+      box.style.maxHeight = h + 'px';
+    });
+  }
+  window.addEventListener('resize', fitRows);
 
   // ---- Tables (all data is written as text, never as HTML)
   const cell = (tr, text, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text; tr.append(td); return td; };
@@ -389,7 +469,74 @@ footer { font-size: 12px; color: var(--muted); }
     });
   }
 
-  $('q-expired').addEventListener('input', drawExpired);
+  function drawRegistered() {
+    const q = $('q-registered').value.trim().toLowerCase();
+    const tbody = $('registered-table').querySelector('tbody'); tbody.replaceChildren();
+    const rows = ((S && S.registered) || []).filter(match(q));
+    if (!rows.length) return empty(tbody, 4, q ? 'No one matches that search.' : 'No one is waiting to pay.');
+    rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      phoneCell(tr, r.phone);
+      cell(tr, r.name ?? '—');
+      cell(tr, fmtDateTime(r.signed_at), 'dt');
+      const d = r.days_since_signed == null ? null : Number(r.days_since_signed);
+      cell(tr, d == null ? '—' : num.format(d), 'num' + (d != null && d <= 7 ? ' amber' : ''));
+      tbody.append(tr);
+    });
+  }
+
+  function drawChurn() {
+    const months = (S && S.churn) || [];
+    const chart = $('churn-chart'), xl = $('churn-x'), tbody = $('churn-table').querySelector('tbody');
+    chart.replaceChildren(); xl.replaceChildren(); tbody.replaceChildren();
+    chart.style.setProperty('--n', months.length || 6); xl.style.setProperty('--n', months.length || 6);
+    const max = Math.max(1, ...months.map((m) => Math.max(m.joined || 0, (m.churned || 0) + (m.still_pending || 0))));
+    const PLOT = 150; // px available for bars
+    const rate = (m) => (m.active_start ? Math.round((m.churned / m.active_start) * 100) + '%' : '—');
+    const h = (v) => Math.max(3, (v / max) * PLOT) + 'px';
+    const seg = (cls, v) => { const s = document.createElement('div'); s.className = 'seg ' + cls; s.style.height = h(v); return s; };
+    // One bar: a value label on top of a stack of segments (listed top to bottom).
+    const bar = (label, segs) => {
+      const bw = document.createElement('div'); bw.className = 'bw';
+      const val = document.createElement('div'); val.className = 'val'; val.textContent = label;
+      const stack = document.createElement('div'); stack.className = 'stack';
+      segs.forEach((s, i) => { if (i === 0) s.classList.add('top'); stack.append(s); });
+      bw.append(val, stack);
+      return bw;
+    };
+    const summary = [];
+    months.forEach((m) => {
+      const j = m.joined || 0, c = m.churned || 0, p = m.still_pending || 0;
+      const col = document.createElement('div');
+      col.className = 'col'; col.tabIndex = 0;
+      const tip = document.createElement('div'); tip.className = 'tip';
+      tip.textContent = m.month_label + ': ' + j + ' new, ' + c + ' churned' + (p ? ', ' + p + ' may still renew' : '') +
+        '. ' + m.active_start + ' active on the 1st (' + rate(m) + ' churn' + (p ? ' so far' : '') + ').';
+      const pair = document.createElement('div'); pair.className = 'pair';
+      pair.append(
+        bar(String(j), j ? [seg('join', j)] : []),
+        bar(c + (p ? '+' + p : ''), [...(p ? [seg('pend', p)] : []), ...(c ? [seg('churn', c)] : [])]),
+      );
+      col.append(tip, pair);
+      col.setAttribute('aria-label', tip.textContent);
+      chart.append(col);
+
+      const x = document.createElement('div');
+      const b = document.createElement('b'); b.textContent = m.month_label.split(' ')[0];
+      x.append(b, document.createTextNode(rate(m) + (p ? ' so far' : '')));
+      xl.append(x);
+
+      const tr = document.createElement('tr');
+      cell(tr, m.month_label); cell(tr, num.format(m.active_start || 0), 'num');
+      cell(tr, num.format(j), 'num'); cell(tr, num.format(c), 'num'); cell(tr, num.format(p), 'num'); cell(tr, rate(m) + (p ? ' so far' : ''), 'num');
+      tbody.append(tr);
+      summary.push(m.month_label + ' ' + j + ' new, ' + c + ' churned');
+    });
+    chart.setAttribute('aria-label', 'New members and churn by month: ' + summary.join(', '));
+  }
+
+  $('q-expired').addEventListener('input', () => { drawExpired(); fitRows(); });
+  $('q-registered').addEventListener('input', () => { drawRegistered(); fitRows(); });
   $('q-inactive').addEventListener('input', drawInactive);
 
   function render(d) {
@@ -421,12 +568,17 @@ footer { font-size: 12px; color: var(--muted); }
     $('seg-f').style.width = (Number(tm.fitshala_pct) || 0) * 100 + '%';
     set('p-month', lm.month_label || '—'); set('p-t', money(lm.total)); set('p-c', money(lm.combatrix)); set('p-f', money(lm.fitshala));
 
-    drawExpired(); drawExpiring(); drawInactive();
+    const reg = S.registered || [];
+    set('t-registered', num.format(s.registered ?? reg.length));
+    set('t-reg30', num.format(reg.filter((r) => r.days_since_signed != null && Number(r.days_since_signed) <= 30).length));
+
+    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn();
+    fitRows();
   }
 
   // ---- Tabs
   const tabs = [...document.querySelectorAll('.tabs [data-view]')];
-  const show = (name) => tabs.forEach((t) => { const on = t.dataset.view === name; t.setAttribute('aria-selected', String(on)); $(t.dataset.view).hidden = !on; });
+  const show = (name) => { tabs.forEach((t) => { const on = t.dataset.view === name; t.setAttribute('aria-selected', String(on)); $(t.dataset.view).hidden = !on; }); fitRows(); };
   tabs.forEach((t) => t.addEventListener('click', () => { show(t.dataset.view); history.replaceState(null, '', '#' + t.dataset.view); }));
   const h = location.hash.slice(1);
   if (tabs.some((t) => t.dataset.view === h)) show(h);
