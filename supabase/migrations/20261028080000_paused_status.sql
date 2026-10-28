@@ -1,14 +1,12 @@
 -- New status 'paused': a member freezes their membership for a set number of days.
---   * combatrix_pause_member() (called by the agent) sets status 'paused', records the pause
---     window and pushes the latest membership's end_date forward by the pause length.
+--   * combatrix_pause_member() (called by the agent) sets status 'paused', records the resume
+--     date and pushes the latest membership's end_date forward by the pause length.
 --   * The daily status job (10:00 AM IST) moves paused -> active on the resume date and clears
---     the pause fields. Paused members are skipped by every other rule in that job.
+--     the resume date. Paused members are skipped by every other rule in that job.
 -- Dates are in IST.
 
 alter table public.combatrix_member
-  add column if not exists pause_start date,
-  add column if not exists pause_days int,
-  add column if not exists pause_resume_date date;  -- first day back (pause_start + pause_days)
+  add column if not exists pause_resume_date date;  -- first day back after a pause
 
 create or replace function public.combatrix_pause_member(
   p_member_id bigint,
@@ -53,8 +51,6 @@ begin
 
   update public.combatrix_member set
     status = 'paused',
-    pause_start = v_start,
-    pause_days = p_days,
     pause_resume_date = v_start + p_days
   where id = p_member_id;
 
@@ -82,7 +78,7 @@ declare
 begin
   -- 0. paused -> active once the pause is over (the membership end date was already extended).
   update public.combatrix_member set
-    status = 'active', pause_start = null, pause_days = null, pause_resume_date = null
+    status = 'active', pause_resume_date = null
   where status = 'paused' and pause_resume_date <= v_today;
   get diagnostics v_resumed = row_count;
 
