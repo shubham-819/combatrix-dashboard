@@ -229,6 +229,16 @@ details.tbl table { margin-top: 8px; }
           </table>
         </div>
       </div>
+      <div class="card">
+        <div class="head"><h2>Paused</h2><button class="btn ghost sm" type="button" data-copy-list="paused">Copy all</button></div>
+        <p class="note">Memberships on pause. They switch back to active on the resume date; the end date already includes the pause.</p>
+        <div class="scroll" data-rows="5">
+          <table id="paused-table">
+            <thead><tr><th>Phone</th><th>Member</th><th>Resumes on</th><th class="num">Days left</th><th class="hide-narrow">Ends on</th><th class="cp"><span class="sr">Copy row</span></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -274,12 +284,13 @@ details.tbl table { margin-top: 8px; }
         <div id="seg-c" style="background:var(--share-c)"></div><div id="seg-f" style="background:var(--share-f)"></div>
       </div>
       <div class="prev">
-        <div class="head"><span>Last month (<span id="p-month">—</span>): <b id="p-t">—</b> total · Combatrix <span id="p-c">—</span> · Fitshala <span id="p-f">—</span></span><button class="btn ghost sm" type="button" id="copy-earnings">Copy with breakup</button></div>
+        <div class="head"><span>Last month (<span id="p-month">—</span>), fees spread over months: <b id="p-t">—</b> earned · Combatrix <span id="p-c">—</span> · Fitshala <span id="p-f">—</span></span><button class="btn ghost sm" type="button" id="copy-earnings">Copy with breakup</button></div>
+        <p class="note">Each fee is split evenly over the months it covers (₹15,000 for 3 months is ₹5,000 a month), and a month's slice counts in the month it starts. Fitshala gets its share of that slice. Cash collected last month: <span id="p-cash">—</span>.</p>
         <details class="tbl">
-          <summary>Show each payment (<span id="p-n">0</span>)</summary>
+          <summary>Show each membership (<span id="p-n">0</span>)</summary>
           <div class="scroll">
             <table id="pay-table">
-              <thead><tr><th>Member</th><th class="hide-narrow">Started</th><th class="num">Fee</th><th class="num">Combatrix</th><th class="num">Fitshala</th></tr></thead>
+              <thead><tr><th>Member</th><th class="hide-narrow">Membership</th><th class="num hide-narrow">Fee</th><th class="num">Month</th><th class="num">This month</th><th class="num">Combatrix</th><th class="num">Fitshala</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -573,6 +584,24 @@ details.tbl table { margin-top: 8px; }
     });
   }
 
+  function drawPaused() {
+    const tbody = $('paused-table').querySelector('tbody'); tbody.replaceChildren();
+    const rows = (S && S.paused) || [];
+    shown.paused = rows.map((r) => ({ name: r.name, phone: r.phone, fee: r.fee }));
+    if (!rows.length) return empty(tbody, 6, 'No one is on a pause.');
+    rows.forEach((r, i) => {
+      const tr = document.createElement('tr');
+      phoneCell(tr, r.phone);
+      cell(tr, r.name ?? '—');
+      cell(tr, fmtDate(r.resumes_on), 'dt');
+      const d = r.days_to_resume == null ? null : Number(r.days_to_resume);
+      cell(tr, d == null ? '—' : d <= 0 ? 'Today' : d === 1 ? 'Tomorrow' : num.format(d), 'num');
+      cell(tr, fmtDate(r.ends_on), 'dt hide-narrow');
+      rowCopyCell(tr, shown.paused[i]);
+      tbody.append(tr);
+    });
+  }
+
   function drawChurn() {
     const months = (S && S.churn) || [];
     const chart = $('churn-chart'), xl = $('churn-x'), tbody = $('churn-table').querySelector('tbody');
@@ -626,6 +655,67 @@ details.tbl table { margin-top: 8px; }
   // ---- Last month's and this month's earnings, one line per payment
   const monthEarnings = (period) => ((S && S.earnings) || []).find((r) => r.period === period) || {};
   const monthPayments = (period) => ((S && S.payments) || []).filter((p) => p.period === period);
+  // Last month on a spread-over-months basis. A membership of N months (N = days / 30.44, rounded)
+  // is split into N equal slices; slice k starts k calendar months after the start date and counts
+  // in the month it starts. Each share is the membership's own share times slice / fee.
+  const ymd = (s) => { const [y, m, d] = String(s).slice(0, 10).split('-').map(Number); return { y, m, d }; };
+  const dayNum = (s) => { const t = ymd(s); return Date.UTC(t.y, t.m - 1, t.d) / 864e5; };
+  function lastMonthAccrual() {
+    const lm = monthEarnings('last_month');
+    if (!lm.month_start) return { rows: [], total: 0, combatrix: 0, fitshala: 0 };
+    const L = ymd(lm.month_start);
+    const rows = [];
+    ((S && S.accrual) || []).forEach((ms) => {
+      const fee = Number(ms.fee) || 0;
+      const n = Math.max(1, Math.round((dayNum(ms.end_date) - dayNum(ms.start_date) + 1) / 30.44));
+      const st = ymd(ms.start_date);
+      const k = (L.y - st.y) * 12 + (L.m - st.m); // which slice starts in last month
+      if (k < 0 || k >= n) return;
+      const slice = fee / n, f = fee ? slice / fee : 0;
+      rows.push({ name: ms.name, start_date: ms.start_date, end_date: ms.end_date, fee, n, k,
+        slice, combatrix: (Number(ms.combatrix) || 0) * f, fitshala: (Number(ms.fitshala) || 0) * f });
+    });
+    const sum = (key) => rows.reduce((a, r) => a + r[key], 0);
+    return { rows, total: sum('slice'), combatrix: sum('combatrix'), fitshala: sum('fitshala') };
+  }
+  const monthOf = (r) => (r.k + 1) + ' of ' + r.n;
+  const spanOf = (r) => fmtDate(r.start_date) + ' – ' + fmtDate(r.end_date);
+  function drawLastMonth() {
+    const a = lastMonthAccrual(), lm = monthEarnings('last_month');
+    set('p-t', money(a.total)); set('p-c', money(a.combatrix)); set('p-f', money(a.fitshala));
+    set('p-cash', money(lm.total));
+    const table = $('pay-table'), tbody = table.querySelector('tbody'); tbody.replaceChildren();
+    const old = table.querySelector('tfoot'); if (old) old.remove();
+    set('p-n', num.format(a.rows.length));
+    if (!a.rows.length) return empty(tbody, 7, 'No memberships covered last month.');
+    a.rows.forEach((r) => {
+      const tr = document.createElement('tr');
+      cell(tr, r.name ?? '—'); cell(tr, spanOf(r), 'dt hide-narrow'); cell(tr, money(r.fee), 'num hide-narrow');
+      cell(tr, monthOf(r), 'num'); cell(tr, money(r.slice), 'num'); cell(tr, money(r.combatrix), 'num'); cell(tr, money(r.fitshala), 'num');
+      tbody.append(tr);
+    });
+    const tf = document.createElement('tfoot'), tr = document.createElement('tr');
+    cell(tr, 'Total'); cell(tr, '', 'hide-narrow'); cell(tr, '', 'hide-narrow'); cell(tr, '', 'num');
+    cell(tr, money(a.total), 'num'); cell(tr, money(a.combatrix), 'num'); cell(tr, money(a.fitshala), 'num');
+    tf.append(tr); table.append(tf);
+  }
+  $('copy-earnings').addEventListener('click', () => {
+    const b = $('copy-earnings'), a = lastMonthAccrual(), lm = monthEarnings('last_month');
+    const share = (v) => (a.total ? ' (' + pct(v / a.total) + ')' : '');
+    const summary = [
+      'Earnings – ' + (lm.month_label || 'last month') + ' (fees spread over months)',
+      'Combatrix: ' + money(a.combatrix) + share(a.combatrix),
+      'Fitshala: ' + money(a.fitshala) + share(a.fitshala),
+      'Total: ' + money(a.total) + ' (' + num.format(a.rows.length) + (a.rows.length === 1 ? ' membership)' : ' memberships)'),
+    ];
+    const rows = a.rows.map((r) => [r.name || '', spanOf(r), money(r.fee), monthOf(r), money(r.slice), money(r.combatrix), money(r.fitshala)]);
+    const text = summary.join('\n') + (rows.length ? '\n\n' + a.rows.map((r, i) =>
+      (i + 1) + '. ' + (r.name || '') + ' · ' + money(r.slice) + ' (month ' + monthOf(r) + ' of ' + money(r.fee) + ') · Combatrix ' + money(r.combatrix) + ', Fitshala ' + money(r.fitshala)).join('\n') : '');
+    const html = '<p><b>' + esc(summary[0]) + '</b><br>' + summary.slice(1).map(esc).join('<br>') + '</p>' +
+      htmlTable(['Member', 'Membership', 'Fee', 'Month', 'This month', 'Combatrix', 'Fitshala'], rows, ['Total', '', '', '', money(a.total), money(a.combatrix), money(a.fitshala)]);
+    copyText(text, html).then((ok) => flash(b, ok));
+  });
+
   function drawPayments(period, tableId, countId) {
     const pays = monthPayments(period), lm = monthEarnings(period);
     const table = $(tableId), tbody = table.querySelector('tbody'); tbody.replaceChildren();
@@ -661,7 +751,6 @@ details.tbl table { margin-top: 8px; }
     copyText(text, html).then((ok) => flash(b, ok));
   });
   }
-  wireCopy('copy-earnings', 'last_month', 'last month');
   wireCopy('copy-earnings-cur', 'this_month', 'this month');
 
   // ---- Churn chart as a PNG. The on-page chart is plain HTML, so it is redrawn on a canvas,
@@ -797,13 +886,13 @@ details.tbl table { margin-top: 8px; }
     $('seg-c').style.width = (Number(tm.combatrix_pct) || 0) * 100 + '%';
     $('seg-f').style.width = (Number(tm.fitshala_pct) || 0) * 100 + '%';
     set('c-month', tm.month_label || '—'); set('c-t', money(tm.total)); set('c-c', money(tm.combatrix)); set('c-f', money(tm.fitshala));
-    set('p-month', lm.month_label || '—'); set('p-t', money(lm.total)); set('p-c', money(lm.combatrix)); set('p-f', money(lm.fitshala));
+    set('p-month', lm.month_label || '—');
 
     const reg = S.registered || [];
     set('t-registered', num.format(s.registered ?? reg.length));
     set('t-reg30', num.format(reg.filter((r) => r.days_since_signed != null && Number(r.days_since_signed) <= 30).length));
 
-    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn(); drawPayments('last_month', 'pay-table', 'p-n'); drawPayments('this_month', 'pay-table-cur', 'c-n');
+    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawPaused(); drawChurn(); drawLastMonth(); drawPayments('this_month', 'pay-table-cur', 'c-n');
     chartBlob = null; chartPng().then((bl) => { chartBlob = bl; }).catch(() => {});
     fitRows();
   }
