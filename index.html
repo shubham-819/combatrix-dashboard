@@ -285,6 +285,18 @@ details.tbl table { margin-top: 8px; }
           </div>
         </details>
       </div>
+      <div class="prev">
+        <div class="head"><span>This month so far (<span id="c-month">—</span>): <b id="c-t">—</b> total · Combatrix <span id="c-c">—</span> · Fitshala <span id="c-f">—</span></span><button class="btn ghost sm" type="button" id="copy-earnings-cur">Copy with breakup</button></div>
+        <details class="tbl">
+          <summary>Show each payment (<span id="c-n">0</span>)</summary>
+          <div class="scroll">
+            <table id="pay-table-cur">
+              <thead><tr><th>Member</th><th class="hide-narrow">Started</th><th class="num">Fee</th><th class="num">Combatrix</th><th class="num">Fitshala</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>
   </section>
 
@@ -611,15 +623,15 @@ details.tbl table { margin-top: 8px; }
     chart.setAttribute('aria-label', 'New members and churn by month: ' + summary.join(', '));
   }
 
-  // ---- Last month's earnings, one line per payment
-  const lastMonth = () => ((S && S.earnings) || []).find((r) => r.period === 'last_month') || {};
-  const lastPayments = () => ((S && S.payments) || []).filter((p) => p.period === 'last_month');
-  function drawPayments() {
-    const pays = lastPayments(), lm = lastMonth();
-    const table = $('pay-table'), tbody = table.querySelector('tbody'); tbody.replaceChildren();
+  // ---- Last month's and this month's earnings, one line per payment
+  const monthEarnings = (period) => ((S && S.earnings) || []).find((r) => r.period === period) || {};
+  const monthPayments = (period) => ((S && S.payments) || []).filter((p) => p.period === period);
+  function drawPayments(period, tableId, countId) {
+    const pays = monthPayments(period), lm = monthEarnings(period);
+    const table = $(tableId), tbody = table.querySelector('tbody'); tbody.replaceChildren();
     const old = table.querySelector('tfoot'); if (old) old.remove();
-    set('p-n', num.format(pays.length));
-    if (!pays.length) return empty(tbody, 5, 'No payments last month.');
+    set(countId, num.format(pays.length));
+    if (!pays.length) return empty(tbody, 5, 'No payments ' + (period === 'last_month' ? 'last' : 'this') + ' month.');
     pays.forEach((p) => {
       const tr = document.createElement('tr');
       cell(tr, p.name ?? '—'); cell(tr, fmtDate(p.start_date), 'dt hide-narrow');
@@ -631,11 +643,12 @@ details.tbl table { margin-top: 8px; }
     cell(tr, money(lm.total), 'num'); cell(tr, money(lm.combatrix), 'num'); cell(tr, money(lm.fitshala), 'num');
     tf.append(tr); table.append(tf);
   }
-  $('copy-earnings').addEventListener('click', () => {
-    const b = $('copy-earnings'), lm = lastMonth(), pays = lastPayments();
+  function wireCopy(btnId, period, fallback) {
+  $(btnId).addEventListener('click', () => {
+    const b = $(btnId), lm = monthEarnings(period), pays = monthPayments(period);
     const n = lm.payments ?? pays.length;
     const summary = [
-      'Earnings – ' + (lm.month_label || 'last month'),
+      'Earnings – ' + (lm.month_label || fallback),
       'Combatrix: ' + money(lm.combatrix) + ' (' + pct(lm.combatrix_pct || 0) + ')',
       'Fitshala: ' + money(lm.fitshala) + ' (' + pct(lm.fitshala_pct || 0) + ')',
       'Total: ' + money(lm.total) + ' (' + num.format(n) + (n === 1 ? ' payment)' : ' payments)'),
@@ -647,6 +660,9 @@ details.tbl table { margin-top: 8px; }
       htmlTable(['Member', 'Started', 'Fee', 'Combatrix', 'Fitshala'], rows, ['Total', '', money(lm.total), money(lm.combatrix), money(lm.fitshala)]);
     copyText(text, html).then((ok) => flash(b, ok));
   });
+  }
+  wireCopy('copy-earnings', 'last_month', 'last month');
+  wireCopy('copy-earnings-cur', 'this_month', 'this month');
 
   // ---- Churn chart as a PNG. The on-page chart is plain HTML, so it is redrawn on a canvas,
   // always in light colours so it reads well wherever it is pasted.
@@ -780,13 +796,14 @@ details.tbl table { margin-top: 8px; }
     set('e-t', money(tm.total)); set('e-n', num.format(tm.payments ?? 0));
     $('seg-c').style.width = (Number(tm.combatrix_pct) || 0) * 100 + '%';
     $('seg-f').style.width = (Number(tm.fitshala_pct) || 0) * 100 + '%';
+    set('c-month', tm.month_label || '—'); set('c-t', money(tm.total)); set('c-c', money(tm.combatrix)); set('c-f', money(tm.fitshala));
     set('p-month', lm.month_label || '—'); set('p-t', money(lm.total)); set('p-c', money(lm.combatrix)); set('p-f', money(lm.fitshala));
 
     const reg = S.registered || [];
     set('t-registered', num.format(s.registered ?? reg.length));
     set('t-reg30', num.format(reg.filter((r) => r.days_since_signed != null && Number(r.days_since_signed) <= 30).length));
 
-    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn(); drawPayments();
+    drawExpired(); drawExpiring(); drawRegistered(); drawInactive(); drawChurn(); drawPayments('last_month', 'pay-table', 'p-n'); drawPayments('this_month', 'pay-table-cur', 'c-n');
     chartBlob = null; chartPng().then((bl) => { chartBlob = bl; }).catch(() => {});
     fitRows();
   }
